@@ -28,6 +28,8 @@ my $invoices = [
 
 sub date_diff {
     my ($a, $b) = @_;
+    print $a;
+    print $b;
 
     my $aa = Time::Piece->strptime($a, "%Y-%m-%d");
     my $bb = Time::Piece->strptime($b, "%Y-%m-%d");
@@ -59,7 +61,7 @@ sub init_structure {
 }
 
 # sub bydate {
-    
+
 # }
 
 # my $c = init_structure($payments);
@@ -72,7 +74,7 @@ sub match {
 
     print Dumper($payment_struc);
     print Dumper($invoices_struc);
-    # All these 3 return structures are all in the format of 
+    # All these 3 return structures are all in the format of
     # { Payment ID # 1 => [ Matched invoice ID #1, ID #2, ... ]
     #   Payment ID # 2 => [ Matched invoice ID #1, ID #2, ... ]
     # }
@@ -85,7 +87,17 @@ sub match {
 	# print Dumper($payment_struc->{$_});
 	if (defined($invoices_struc->{$amount})) {
 	    # There is still matching payments in the invoice value.
-	    my $ddiff = date_diff($payments->{$amount};
+	    my @payment_arr = @{$payment_struc->{$amount}};
+	    my @invoice_arr = @{$invoices_struc->{$amount}};
+	    print Dumper(@payment_arr);
+	    print Dumper(@invoice_arr);
+
+	    for (@payment_arr) {
+		my ($pid, $date) = @{$_};
+	    }
+
+	    # my $ddiff = date_diff($payment_struc->{$amount}->[0]->[1], $invoices_struc->{$amount}->[0]->[1]);
+	    # print "\n" . $ddiff . "\n";
 	}
     }
 }

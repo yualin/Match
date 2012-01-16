@@ -1,0 +1,2 @@
+Design a function, which takes in 2 arrays, one contains many payments, the other contains many invoices, then this function match each payments to one or many invoices, based on amount match, the closeness of date.
+

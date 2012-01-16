@@ -26,7 +26,7 @@ my $invoices = [
 # print Dumper($payments);
 # print Dumper(@{$invoices});
 
-sub time_diff {
+sub date_diff {
     my ($a, $b) = @_;
 
     my $aa = Time::Piece->strptime($a, "%Y-%m-%d");
@@ -41,10 +41,10 @@ sub time_diff {
 sub init_structure {
     my $input = shift;
     my $a = {};
-    print Dumper($input);
+    # print Dumper($input);
     for (@{$input}) {
  	my ($ID, $amount, $date) = @{$_};
-	print "ID: $ID, amount: $amount, date: $date.\n";
+	# print "ID: $ID, amount: $amount, date: $date.\n";
 	if (defined($a->{$amount})) {
 	    # We have seen the same amount before. Add this item to the list.
 	    push(@{$a->{$amount}}, [$ID, $date]);
@@ -70,6 +70,8 @@ sub match {
     my $payment_struc = init_structure($payments);
     my $invoices_struc = init_structure($invoices);
 
+    print Dumper($payment_struc);
+    print Dumper($invoices_struc);
     # All these 3 return structures are all in the format of 
     # { Payment ID # 1 => [ Matched invoice ID #1, ID #2, ... ]
     #   Payment ID # 2 => [ Matched invoice ID #1, ID #2, ... ]
@@ -78,5 +80,14 @@ sub match {
     my $candidates = {};
     my $user_confirm = {};
 
-    
+    for (keys (%{$payment_struc})) {
+	my $amount = $_;
+	# print Dumper($payment_struc->{$_});
+	if (defined($invoices_struc->{$amount})) {
+	    # There is still matching payments in the invoice value.
+	    my $ddiff = date_diff($payments->{$amount};
+	}
+    }
 }
+
+match;

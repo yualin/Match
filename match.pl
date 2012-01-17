@@ -175,15 +175,19 @@ sub find_match {
     print Dumper($total_hash);
     print Dumper($elements_hash);
 
+    my $element_count = 0;
+
+    for my $key (keys %{$elements_hash}) {
+	$element_count += $elements_hash->{$key};
+    }
 
     use Math::Combinatorics;
 
-    for my $i (2 .. keys (%{$elements_hash})) {
-	print $i . "\n";
+    for my $i (2 .. $element_count) {
+	my $combinat = Math::Combinatorics->new(count => $i,
+	    data => keys (%{$elements_hash}), );
     }
     my $sum = 0;
-
-    my $element_count = 0;
 
     for my $total (keys %{$total_hash}) {
 	$sum += $total;

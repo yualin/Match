@@ -5,6 +5,10 @@ use warnings;
 use Time::Piece;
 use Data::Dumper;
 
+use constant DEBUG_V => 1;
+use constant DEBUG_VV => 0;
+use constant DEBUG_VVV => 0;
+
 my $match_criteria = 3;
 my $candidate_criteria = 8;
 my $user_confirme_criteria = 32;
@@ -32,13 +36,14 @@ my $invoices = [
 
 sub date_diff {
     my ($a, $b) = @_;
-    print $a;
-    print $b;
+    warn $a if DEBUG_VVV;
+    warn $b if DEBUG_VVV;
 
     my $aa = Time::Piece->strptime($a, "%Y-%m-%d");
     my $bb = Time::Piece->strptime($b, "%Y-%m-%d");
 
     my $diff = $aa - $bb;
+    warn "Returning " . abs(int($diff->days)) if DEBUG_VVV;
     return abs(int($diff->days));
 }
 
@@ -47,10 +52,10 @@ sub date_diff {
 sub init_structure {
     my $input = shift;
     my $a = {};
-    # print Dumper($input);
+    warn Dumper($input) if DEBUG_VVV;
     for (@{$input}) {
  	my ($ID, $amount, $date) = @{$_};
-	# print "ID: $ID, amount: $amount, date: $date.\n";
+	warn "ID: $ID, amount: $amount, date: $date.\n" if DEBUG_VVV;
 	if (defined($a->{$amount})) {
 	    # We have seen the same amount before. Add this item to the list.
 	    push(@{$a->{$amount}}, [$ID, $date]);
@@ -76,8 +81,9 @@ sub match {
     my $payment_struc = init_structure($payments);
     my $invoices_struc = init_structure($invoices);
 
-    print Dumper($payment_struc);
-    print Dumper($invoices_struc);
+    warn Dumper($payment_struc) if DEBUG_VVV;
+    warn Dumper($invoices_struc) if DEBUG_VVV;
+
     # All these 3 return structures are all in the format of
     # { Payment ID # 1 => [ Matched invoice ID #1, ID #2, ... ]
     #   Payment ID # 2 => [ Matched invoice ID #1, ID #2, ... ]

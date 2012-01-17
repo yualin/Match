@@ -31,9 +31,6 @@ my $invoices = [
 
 ];
 
-# print Dumper($payments);
-# print Dumper(@{$invoices});
-
 sub date_diff {
     my ($a, $b) = @_;
     warn $a if DEBUG_VVV;
@@ -72,9 +69,6 @@ sub init_structure {
 # sub bydate {
 
 # }
-
-# my $c = init_structure($payments);
-# print Dumper($c);
 
 # The matching function
 sub match {

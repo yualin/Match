@@ -115,11 +115,24 @@ sub match {
 	    warn print $pid . "\n" if DEBUG_VV;
 	    warn print $date . "\n" if DEBUG_VV;
 
-	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, 0, $match_criteria, $matched);
+	    match_payment_invoice ($invoice_arr, $payment_arr,
+				   $j, $pid, $date,
+				   0, $match_criteria,
+				   $matched);
 
-	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, $match_criteria, $candidate_criteria, $candidates);
+	    warn 'payment_struc: ' if DEBUG_V;
+	    warn Dumper($payment_struc) if DEBUG_V;
+	    match_payment_invoice ($invoice_arr, $payment_arr,
+				   $j, $pid, $date,
+				   $match_criteria, $candidate_criteria,
+				   $candidates);
 
-	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, $candidate_criteria, $user_confirm_criteria, $user_confirm);
+	    warn 'payment_struc: ' if DEBUG_V;
+	    warn Dumper($payment_struc) if DEBUG_V;
+	    match_payment_invoice ($invoice_arr, $payment_arr,
+				   $j, $pid, $date,
+				   $candidate_criteria, $user_confirm_criteria,
+				   $user_confirm);
 
 	}
     }

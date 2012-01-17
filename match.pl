@@ -116,41 +116,12 @@ sub match {
 	    warn print $pid . "\n" if DEBUG_VV;
 	    warn print $date . "\n" if DEBUG_VV;
 
-	    # Flag, match found for this payment.
-	    my $matched_flag = 0;
+	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, 0, $match_criteria, $matched);
 
-	    # Loop through the invoice_arr
-	    for my $i (0 .. $#invoice_arr) {
-		next unless defined($invoice_arr[$i]);
-		my ($iid, $idate) = @{$invoice_arr[$i]};
-		my $diff = abs(date_diff($date, $idate));
+	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, $match_criteria, $candidate_criteria, $candidates);
 
-		# Matching Criteria,
-		if ($diff < $match_criteria) {
-		    $matched->{$pid} = [($iid)];
-		    $matched_flag = 1;
-		} elsif ($diff < $candidate_criteria) {
-		    $candidates->{$pid} = [($iid)];
-		    $matched_flag = 1;
-		} elsif ($diff < $user_confirme_criteria) {
-		    $candidates->{$pid} = [($iid)];
-		    $matched_flag = 1;
-		}
+	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, $candidate_criteria, $user_confirm_criteria, $user_confirm);
 
-		# Process on the payment_arr and invoice_arr
-		if ($matched_flag == 1) {
-		    delete $payment_arr[$j];
-		    delete $invoice_arr[$i];
-		    last;
-		} else {
-		}
-	    }
-	    if ($matched_flag == 1) {
-		next;
-	    }
-
-	    # my $ddiff = date_diff($payment_struc->{$amount}->[0]->[1], $invoices_struc->{$amount}->[0]->[1]);
-	    # print "\n" . $ddiff . "\n";
 	}
     }
     warn '$matched: ' if DEBUG_V;
@@ -159,6 +130,31 @@ sub match {
     warn Dumper($candidates) if DEBUG_V;
     warn '$user_confirm: ' if DEBUG_V;
     warn Dumper($user_confirm) if DEBUG_V;
+}
+
+sub match_payment_invoice {
+    my $invoice_arrref = shift;
+    my $payment_arrref = shift;
+    my $j = shift;
+    my $pid = shift;
+    my $date = shift;
+    my $criteria_min = shift;
+    my $criteria_max = shift;
+    my $output_hash = shift;
+
+    # Loop through the invoice_arr for candidate_criteria
+    for my $i (0 .. $#{$invoice_arrref}) {
+	next unless defined($invoice_arrref->[$i]);
+	my ($iid, $idate) = @{$invoice_arrref->[$i]};
+	my $diff = abs(date_diff($date, $idate));
+
+	# Matching Criteria
+	if ($diff >= $criteria_min && $diff < $criteria_max) {
+	    $output_hash->{$pid} = [($iid)];
+	    delete $payment_arrref->[$j];
+	    delete $invoice_arrref->[$i];
+	}
+    }
 }
 
 match;

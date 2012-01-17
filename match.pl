@@ -5,7 +5,7 @@ use warnings;
 use Time::Piece;
 use Data::Dumper;
 
-use constant DEBUG_V => 1;
+use constant DEBUG_V => 0;
 use constant DEBUG_VV => 0;
 use constant DEBUG_VVV => 0;
 
@@ -89,7 +89,7 @@ sub match {
     my $candidates = {};
     my $user_confirm = {};
 
-    # Loop through the payment sturcture.
+    # Single Match.
     for my $amount (keys (%{$payment_struc})) {
 
 	warn Dumper($payment_struc->{$_}) if DEBUG_VVV;
@@ -120,36 +120,75 @@ sub match {
 				   0, $match_criteria,
 				   $matched);
 
-	    warn 'payment_struc: ' if DEBUG_V;
-	    warn Dumper($payment_struc) if DEBUG_V;
 	    match_payment_invoice ($invoice_arr, $payment_arr,
 				   $j, $pid, $date,
 				   $match_criteria, $candidate_criteria,
 				   $candidates);
 
-	    warn 'payment_struc: ' if DEBUG_V;
-	    warn Dumper($payment_struc) if DEBUG_V;
 	    match_payment_invoice ($invoice_arr, $payment_arr,
 				   $j, $pid, $date,
 				   $candidate_criteria, $user_confirm_criteria,
 				   $user_confirm);
-
 	}
     }
 
     clean_struct ($payment_struc);
     clean_struct ($invoices_struc);
 
+    # Multiple match.
+    my $payments_hash = construct_counting_hash($payment_struc);
+    my $invoices_hash = construct_counting_hash($invoices_struc);
+
+    my $results = find_match($payments_hash, $invoices_hash);
+
     warn 'payment_struc: ' if DEBUG_V;
     warn Dumper($payment_struc) if DEBUG_V;
     warn 'invoices_struc: ' if DEBUG_V;
     warn Dumper($invoices_struc) if DEBUG_V;
+
     warn '$matched: ' if DEBUG_V;
     warn Dumper($matched) if DEBUG_V;
     warn '$candidates: ' if DEBUG_V;
     warn Dumper($candidates) if DEBUG_V;
     warn '$user_confirm: ' if DEBUG_V;
     warn Dumper($user_confirm) if DEBUG_V;
+
+    return $matched, $candidates, $user_confirm;
+}
+
+sub construct_counting_hash {
+    my $a = shift;
+
+    my $re = {};
+
+    for my $e (keys %{$a}) {
+	$re->{$e} = $#{$a->{$e}} + 1;
+    }
+
+    return $re;
+}
+
+sub find_match {
+    my $total_hash = shift;
+    my $elements_hash = shift;
+
+    print Dumper($total_hash);
+    print Dumper($elements_hash);
+
+
+    use Math::Combinatorics;
+
+    for my $i (2 .. keys (%{$elements_hash})) {
+	print $i . "\n";
+    }
+    my $sum = 0;
+
+    my $element_count = 0;
+
+    for my $total (keys %{$total_hash}) {
+	$sum += $total;
+    }
+    # print $sum;
 }
 
 sub clean_struct {
@@ -162,8 +201,8 @@ sub clean_struct {
 	foreach (@{$src}) {
 	    push(@{$dst}, $_) if defined($_);
 	}
-	# warn "dst:\n";
-	# warn Dumper($dst);
+	warn "dst:\n" if DEBUG_VVV;
+	warn Dumper($dst) if DEBUG_VVV;
 	if (-1 == $#{$dst}) {
 	    delete $hashref->{$amount};
 	} else {

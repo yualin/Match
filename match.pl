@@ -124,6 +124,11 @@ sub match {
 
 	}
     }
+
+    warn 'payment_struc: ' if DEBUG_V;
+    warn Dumper($payment_struc) if DEBUG_V;
+    warn 'invoices_struc: ' if DEBUG_V;
+    warn Dumper($invoices_struc) if DEBUG_V;
     warn '$matched: ' if DEBUG_V;
     warn Dumper($matched) if DEBUG_V;
     warn '$candidates: ' if DEBUG_V;

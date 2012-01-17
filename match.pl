@@ -158,6 +158,7 @@ sub match_payment_invoice {
 	    $output_hash->{$pid} = [($iid)];
 	    delete $payment_arrref->[$j];
 	    delete $invoice_arrref->[$i];
+	    last;
 	}
     }
 }

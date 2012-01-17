@@ -86,24 +86,78 @@ sub match {
     my $candidates = {};
     my $user_confirm = {};
 
+    # Loop through the payment sturcture.
     for (keys (%{$payment_struc})) {
 	my $amount = $_;
-	# print Dumper($payment_struc->{$_});
-	if (defined($invoices_struc->{$amount})) {
-	    # There is still matching payments in the invoice value.
-	    my @payment_arr = @{$payment_struc->{$amount}};
-	    my @invoice_arr = @{$invoices_struc->{$amount}};
-	    print Dumper(@payment_arr);
-	    print Dumper(@invoice_arr);
 
-	    for (@payment_arr) {
-		my ($pid, $date) = @{$_};
+	warn Dumper($payment_struc->{$_}) if DEBUG_VVV;
+	next unless defined($invoices_struc->{$amount});
+
+	# There is still matching payments in the invoice value.
+	my @payment_arr = @{$payment_struc->{$amount}};
+	my @invoice_arr = @{$invoices_struc->{$amount}};
+	warn Dumper(@payment_arr) if DEBUG_VVV;
+	warn Dumper(@invoice_arr) if DEBUG_VVV;
+
+	# Loop through the payment array for this amount
+	for my $j (0 .. $#payment_arr) {
+	    next unless defined($payment_arr[$j]);
+
+	    # Debug message
+	    warn '$j: ' . $j . "\n" if DEBUG_VV;
+	    warn '@payment_arr: ' . "\n" if DEBUG_VV;
+	    warn Dumper(@payment_arr) if DEBUG_VV;
+	    warn '@payment_arr[' . $j . ']: ' if DEBUG_VV;
+	    warn Dumper($payment_arr[$j]) if DEBUG_VV;
+	    my ($pid, $date) = @{$payment_arr[$j]};
+	    warn print $pid . "\n" if DEBUG_VV;
+	    warn print $date . "\n" if DEBUG_VV;
+
+	    # Flag, match found for this payment.
+	    my $matched_flag = 0;
+
+	    # Loop through the invoice_arr
+	    for my $i (0 .. $#invoice_arr) {
+		next unless defined($invoice_arr[$i]);
+		my ($iid, $idate) = @{$invoice_arr[$i]};
+		# print $iid . "\n";
+		# print $idate . "\n";
+		my $diff = abs(date_diff($date, $idate));
+
+		# Matching Criteria,
+		if ($diff < $match_criteria) {
+		    $matched->{$pid} = [($iid)];
+		    $matched_flag = 1;
+		} elsif ($diff < $candidate_criteria) {
+		    $matched_flag = 0;
+		} elsif ($diff < $user_confirme_criteria) {
+		    $matched_flag = 0;
+		}
+
+		# Process on the payment_arr and invoice_arr
+		if ($matched_flag == 1) {
+		    delete $payment_arr[$j];
+		    delete $invoice_arr[$i];
+		    # print Dumper(@payment_arr);
+		    # print Dumper(@invoice_arr);
+		    last;
+		} else {
+		}
+	    }
+	    if ($matched_flag == 1) {
+		next;
 	    }
 
 	    # my $ddiff = date_diff($payment_struc->{$amount}->[0]->[1], $invoices_struc->{$amount}->[0]->[1]);
 	    # print "\n" . $ddiff . "\n";
 	}
     }
+    warn '$matched: ' if DEBUG_V;
+    warn Dumper($matched) if DEBUG_V;
+    warn '$candidates: ' if DEBUG_V;
+    warn Dumper($candidates) if DEBUG_V;
+    warn '$user_confirm: ' if DEBUG_V;
+    warn Dumper($user_confirm) if DEBUG_V;
 }
 
 match;

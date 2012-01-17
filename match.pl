@@ -97,30 +97,30 @@ sub match {
 	next unless defined($invoices_struc->{$amount});
 
 	# There is still matching payments in the invoice value.
-	my @payment_arr = @{$payment_struc->{$amount}};
-	my @invoice_arr = @{$invoices_struc->{$amount}};
-	warn Dumper(@payment_arr) if DEBUG_VVV;
-	warn Dumper(@invoice_arr) if DEBUG_VVV;
+	my $payment_arr = $payment_struc->{$amount};
+	my $invoice_arr = $invoices_struc->{$amount};
+	warn Dumper($payment_arr) if DEBUG_VVV;
+	warn Dumper($invoice_arr) if DEBUG_VVV;
 
 	# Loop through the payment array for this amount
-	for my $j (0 .. $#payment_arr) {
-	    next unless defined($payment_arr[$j]);
+	for my $j (0 .. $#{$payment_arr}) {
+	    next unless defined($payment_arr->[$j]);
 
 	    # Debug message
 	    warn '$j: ' . $j . "\n" if DEBUG_VV;
 	    warn '@payment_arr: ' . "\n" if DEBUG_VV;
-	    warn Dumper(@payment_arr) if DEBUG_VV;
+	    warn Dumper(@{$payment_arr}) if DEBUG_VV;
 	    warn '@payment_arr[' . $j . ']: ' if DEBUG_VV;
-	    warn Dumper($payment_arr[$j]) if DEBUG_VV;
-	    my ($pid, $date) = @{$payment_arr[$j]};
+	    warn Dumper($payment_arr->[$j]) if DEBUG_VV;
+	    my ($pid, $date) = @{$payment_arr->[$j]};
 	    warn print $pid . "\n" if DEBUG_VV;
 	    warn print $date . "\n" if DEBUG_VV;
 
-	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, 0, $match_criteria, $matched);
+	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, 0, $match_criteria, $matched);
 
-	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, $match_criteria, $candidate_criteria, $candidates);
+	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, $match_criteria, $candidate_criteria, $candidates);
 
-	    match_payment_invoice (\@invoice_arr, \@payment_arr, $j, $pid, $date, $candidate_criteria, $user_confirm_criteria, $user_confirm);
+	    match_payment_invoice ($invoice_arr, $payment_arr, $j, $pid, $date, $candidate_criteria, $user_confirm_criteria, $user_confirm);
 
 	}
     }

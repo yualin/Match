@@ -90,8 +90,7 @@ sub match {
     my $user_confirm = {};
 
     # Loop through the payment sturcture.
-    for (keys (%{$payment_struc})) {
-	my $amount = $_;
+    for my $amount (keys (%{$payment_struc})) {
 
 	warn Dumper($payment_struc->{$_}) if DEBUG_VVV;
 	next unless defined($invoices_struc->{$amount});

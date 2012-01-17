@@ -137,6 +137,9 @@ sub match {
 	}
     }
 
+    clean_struct ($payment_struc);
+    clean_struct ($invoices_struc);
+
     warn 'payment_struc: ' if DEBUG_V;
     warn Dumper($payment_struc) if DEBUG_V;
     warn 'invoices_struc: ' if DEBUG_V;
@@ -147,6 +150,26 @@ sub match {
     warn Dumper($candidates) if DEBUG_V;
     warn '$user_confirm: ' if DEBUG_V;
     warn Dumper($user_confirm) if DEBUG_V;
+}
+
+sub clean_struct {
+    my $hashref = shift;
+
+    for my $amount (keys %{$hashref}) {
+	my $src = $hashref->{$amount};
+	my $dst = [];
+
+	foreach (@{$src}) {
+	    push(@{$dst}, $_) if defined($_);
+	}
+	# warn "dst:\n";
+	# warn Dumper($dst);
+	if (-1 == $#{$dst}) {
+	    delete $hashref->{$amount};
+	} else {
+	    $hashref->{$amount} = $dst;
+	}
+    }
 }
 
 sub match_payment_invoice {

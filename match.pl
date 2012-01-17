@@ -11,7 +11,7 @@ use constant DEBUG_VVV => 0;
 
 my $match_criteria = 3;
 my $candidate_criteria = 8;
-my $user_confirme_criteria = 32;
+my $user_confirm_criteria = 32;
 
 my $payments = [
     # PID, amounts, date

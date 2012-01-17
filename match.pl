@@ -5,6 +5,10 @@ use warnings;
 use Time::Piece;
 use Data::Dumper;
 
+my $match_criteria = 3;
+my $candidate_criteria = 8;
+my $user_confirme_criteria = 32;
+
 my $payments = [
     # PID, amounts, date
     [1, 2000, '2010-11-25'],

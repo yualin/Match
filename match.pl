@@ -19,6 +19,7 @@ my $payments = [
     [2, 2050, '2012-11-02'],
     [3, 4000, '2011-12-20'],
     [4, 2000, '2012-11-03'],
+    [5, 2000, '2011-11-17'],
 ];
 
 my $invoices = [
@@ -28,7 +29,7 @@ my $invoices = [
     [3, 50, '2012-11-01'],
     [4, 2000, '2010-11-24'],
     [5, 2000, '2010-11-24'],
-
+    [6, 2000, '2011-11-24'],
 ];
 
 sub date_diff {
@@ -120,8 +121,6 @@ sub match {
 	    for my $i (0 .. $#invoice_arr) {
 		next unless defined($invoice_arr[$i]);
 		my ($iid, $idate) = @{$invoice_arr[$i]};
-		# print $iid . "\n";
-		# print $idate . "\n";
 		my $diff = abs(date_diff($date, $idate));
 
 		# Matching Criteria,
@@ -129,17 +128,17 @@ sub match {
 		    $matched->{$pid} = [($iid)];
 		    $matched_flag = 1;
 		} elsif ($diff < $candidate_criteria) {
-		    $matched_flag = 0;
+		    $candidates->{$pid} = [($iid)];
+		    $matched_flag = 1;
 		} elsif ($diff < $user_confirme_criteria) {
-		    $matched_flag = 0;
+		    $candidates->{$pid} = [($iid)];
+		    $matched_flag = 1;
 		}
 
 		# Process on the payment_arr and invoice_arr
 		if ($matched_flag == 1) {
 		    delete $payment_arr[$j];
 		    delete $invoice_arr[$i];
-		    # print Dumper(@payment_arr);
-		    # print Dumper(@invoice_arr);
 		    last;
 		} else {
 		}

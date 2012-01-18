@@ -21,6 +21,7 @@ my $payments = [
     [4, 2000, '2012-11-03'],
     [5, 2000, '2011-11-17'],
     [6, 2000, '2009-11-17'],
+    [7, 3333, '2009-12-17'],
 ];
 
 my $invoices = [
@@ -32,6 +33,8 @@ my $invoices = [
     [5, 2000, '2010-11-24'],
     [6, 2000, '2011-11-24'],
     [7, 2000, '2009-12-17'],
+    [8, 1111, '2009-11-16'],
+    [9, 2222, '2009-11-17'],
 ];
 
 sub date_diff {
@@ -58,10 +61,10 @@ sub init_structure {
 	warn "ID: $ID, amount: $amount, date: $date.\n" if DEBUG_VVV;
 	if (defined($a->{$amount})) {
 	    # We have seen the same amount before. Add this item to the list.
-	    push(@{$a->{$amount}}, [$ID, $date]);
+	    push(@{$a->{$amount}}, [$ID, $date, $amount]);
 	} else {
 	    # This is the first time we see the amount, create a new entry.
-	    $a->{$amount} = [[$ID, $date]];
+	    $a->{$amount} = [[$ID, $date, $amount]];
 	}
 
     }
@@ -136,10 +139,14 @@ sub match {
     clean_struct ($invoices_struc);
 
     # Multiple match.
-    my $payments_hash = construct_counting_hash($payment_struc);
-    my $invoices_hash = construct_counting_hash($invoices_struc);
+    my $payments_list = construct_value_list($payment_struc);
+    my $invoices_list = construct_value_list($invoices_struc);
 
-    my $results = find_match($payments_hash, $invoices_hash);
+    my ($t1, $t2, $t3) = find_matches($payments_list, $invoices_list);
+
+    $matched = {%{$matched}, %{$t1}};
+    $candidates = {%{$candidates}, %{$t2}};
+    $user_confirm = {%{$user_confirm}, %{$t3}};
 
     warn 'payment_struc: ' if DEBUG_V;
     warn Dumper($payment_struc) if DEBUG_V;
@@ -156,13 +163,121 @@ sub match {
     return $matched, $candidates, $user_confirm;
 }
 
+sub find_matches {
+    my $target_list = shift;
+    my $elements_list = shift;
+
+    my $matched = {};
+    my $candidates = {};
+    my $user_confirm = {};
+
+    warn Dumper($target_list) if DEBUG_VV;
+    warn Dumper($elements_list) if DEBUG_VV;
+
+    use Math::Combinatorics;
+
+    my $matched_invoice_id_array = [];
+    for my $i (2 .. @{$elements_list}) {
+	my $combinat =
+	    Math::Combinatorics->new(count => $i,
+				     data => $elements_list);
+
+	while(scalar (my @a = $combinat->next_combination()) != 0) {
+
+	    my $sum = 0;
+	    my $date_array = [];
+	    my $invoice_id_array = [];
+
+	    # Get the sum of current combination.
+	    for my $e (@a) {
+		my ($id, $date, $amount) = @{$e};
+		$sum += $amount;
+		push @{$date_array}, $date;
+		push @{$invoice_id_array}, $id;
+	    }
+
+	    next unless invoice_not_used($invoice_id_array,
+					 $matched_invoice_id_array);
+
+	    # Check against the target_list
+	    for my $e (@{$target_list}) {
+		my ($pid, $date, $amount) = @{$e};
+		next if $amount != $sum;
+
+		# Check match.
+
+		# 0 - Match, 1 - candidate, 2 - User confirmation, 3 - No.
+		my $within_range = 0;
+		for (@{$date_array}) {
+		    my $diff = abs date_diff($date, $_);
+
+		    if ($diff < $match_criteria) {
+			$within_range = 0 if 0 > $within_range;
+		    } elsif ($diff < $candidate_criteria) {
+			$within_range = 1 if 1 > $within_range;
+		    } elsif ($diff < $user_confirm_criteria) {
+			$within_range = 2 if 2 > $within_range;
+		    } else {
+			$within_range = 3;
+			last;
+		    }
+		}
+
+		next if $within_range == 3;
+
+		print "Update found match.\n";
+		my $target_hash;
+		$target_hash = $matched if $within_range == 0;
+		$target_hash = $candidates if $within_range == 1;
+		$target_hash = $user_confirm if $within_range == 2;
+
+		$target_hash->{$pid} = $invoice_id_array;
+		$matched_invoice_id_array =
+		    [
+		     @{$matched_invoice_id_array},
+		     @{$invoice_id_array},
+		    ];
+	    }
+	}
+    }
+
+    return $matched, $candidates, $user_confirm;
+}
+
+sub invoice_not_used {
+    my $a = shift;
+    my $t = shift;
+
+    warn Dumper $a if DEBUG_VVV;
+    warn Dumper $t if DEBUG_VVV;
+    for my $i (@{$a}) {
+	my $r = grep {$_ == $i} @{$t};
+
+	return 0 if $r > 0;
+    }
+
+    return 1;
+}
+
+sub construct_value_list {
+    my $a = shift;
+
+    my $re = [];
+
+    for my $e (keys %{$a}) {
+	$re = [@{$re}, @{$a->{$e}}];
+    }
+
+    return $re;
+}
+
 sub construct_counting_hash {
     my $a = shift;
 
     my $re = {};
 
     for my $e (keys %{$a}) {
-	$re->{$e} = $#{$a->{$e}} + 1;
+	$re->{$e} = scalar @{$a->{$e}};
     }
 
     return $re;
@@ -181,18 +296,28 @@ sub find_match {
 	$element_count += $elements_hash->{$key};
     }
 
-    use Math::Combinatorics;
+    my $frequencies_array = [];
+    my $data_keys = [keys %{$elements_hash}];
 
-    for my $i (2 .. $element_count) {
-	my $combinat = Math::Combinatorics->new(count => $i,
-	    data => keys (%{$elements_hash}), );
+    for (@{$data_keys}) {
+	push @{$frequencies_array}, $elements_hash->{$_};
     }
-    my $sum = 0;
 
-    for my $total (keys %{$total_hash}) {
-	$sum += $total;
-    }
-    # print $sum;
+    print Dumper($frequencies_array);
+
+    # use Math::Combinatorics;
+
+    # for my $i (2 .. $element_count) {
+    # 	my $combinat =
+    # 	    Math::Combinatorics->new(count => $i,
+    # 				     data => $data_keys,
+    # 				     frequency => $frequencies_array);
+
+    # What the hell does this function want?
+    # 	$a = $combinat->next_multiset;
+    # 	print Dumper($a);
+    # }
+
 }
 
 sub clean_struct {

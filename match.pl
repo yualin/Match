@@ -225,7 +225,6 @@ sub find_matches {
 
 		next if $within_range == 3;
 
-		print "Update found match.\n";
 		my $target_hash;
 		$target_hash = $matched if $within_range == 0;
 		$target_hash = $candidates if $within_range == 1;

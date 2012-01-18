@@ -233,7 +233,7 @@ sub match_payment_invoice {
 
 	# Matching Criteria
 	if ($diff >= $criteria_min && $diff < $criteria_max) {
-	    $output_hash->{$pid} = [($iid)];
+	    $output_hash->{$pid} = [$iid];
 	    delete $payment_arrref->[$j];
 	    delete $invoice_arrref->[$i];
 	    last;

@@ -283,42 +283,43 @@ sub construct_counting_hash {
     return $re;
 }
 
-sub find_match {
-    my $total_hash = shift;
-    my $elements_hash = shift;
+# This function is not used.
+# sub find_match {
+#     my $total_hash = shift;
+#     my $elements_hash = shift;
 
-    print Dumper($total_hash);
-    print Dumper($elements_hash);
+#     print Dumper($total_hash);
+#     print Dumper($elements_hash);
 
-    my $element_count = 0;
+#     my $element_count = 0;
 
-    for my $key (keys %{$elements_hash}) {
-	$element_count += $elements_hash->{$key};
-    }
+#     for my $key (keys %{$elements_hash}) {
+# 	$element_count += $elements_hash->{$key};
+#     }
 
-    my $frequencies_array = [];
-    my $data_keys = [keys %{$elements_hash}];
+#     my $frequencies_array = [];
+#     my $data_keys = [keys %{$elements_hash}];
 
-    for (@{$data_keys}) {
-	push @{$frequencies_array}, $elements_hash->{$_};
-    }
+#     for (@{$data_keys}) {
+# 	push @{$frequencies_array}, $elements_hash->{$_};
+#     }
 
-    print Dumper($frequencies_array);
+#     print Dumper($frequencies_array);
 
-    # use Math::Combinatorics;
+#     # use Math::Combinatorics;
 
-    # for my $i (2 .. $element_count) {
-    # 	my $combinat =
-    # 	    Math::Combinatorics->new(count => $i,
-    # 				     data => $data_keys,
-    # 				     frequency => $frequencies_array);
+#     # for my $i (2 .. $element_count) {
+#     # 	my $combinat =
+#     # 	    Math::Combinatorics->new(count => $i,
+#     # 				     data => $data_keys,
+#     # 				     frequency => $frequencies_array);
 
-    # What the hell does this function want?
-    # 	$a = $combinat->next_multiset;
-    # 	print Dumper($a);
-    # }
+#     # What the hell does this function want?
+#     # 	$a = $combinat->next_multiset;
+#     # 	print Dumper($a);
+#     # }
 
-}
+# }
 
 sub clean_struct {
     my $hashref = shift;

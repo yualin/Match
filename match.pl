@@ -5,7 +5,7 @@ use warnings;
 use Time::Piece;
 use Data::Dumper;
 
-use constant DEBUG_V => 0;
+use constant DEBUG_V => 1;
 use constant DEBUG_VV => 0;
 use constant DEBUG_VVV => 0;
 
@@ -21,7 +21,7 @@ my $payments = [
     [4, 2000, '2012-11-03'],
     [5, 2000, '2011-11-17'],
     [6, 2000, '2009-11-17'],
-    [7, 3333, '2009-12-17'],
+    [7, 3333, '2009-11-17'],
 ];
 
 my $invoices = [
@@ -78,6 +78,9 @@ sub init_structure {
 
 # The matching function
 sub match {
+    my $payments = shift;
+    my $invoices = shift;
+
     my $payment_struc = init_structure($payments);
     my $invoices_struc = init_structure($invoices);
 
@@ -209,7 +212,7 @@ sub find_matches {
 		# 0 - Match, 1 - candidate, 2 - User confirmation, 3 - No.
 		my $within_range = 0;
 		for (@{$date_array}) {
-		    my $diff = abs date_diff($date, $_);
+		    my $diff = date_diff($date, $_);
 
 		    if ($diff < $match_criteria) {
 			$within_range = 0 if 0 > $within_range;
@@ -354,7 +357,7 @@ sub match_payment_invoice {
     for my $i (0 .. $#{$invoice_arrref}) {
 	next unless defined($invoice_arrref->[$i]);
 	my ($iid, $idate) = @{$invoice_arrref->[$i]};
-	my $diff = abs(date_diff($date, $idate));
+	my $diff = date_diff($date, $idate);
 
 	# Matching Criteria
 	if ($diff >= $criteria_min && $diff < $criteria_max) {
@@ -366,4 +369,4 @@ sub match_payment_invoice {
     }
 }
 
-match;
+match $payments, $invoices;
